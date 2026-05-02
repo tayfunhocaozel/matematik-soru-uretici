@@ -1,0 +1,4 @@
+flask
+supabase
+notebooklm-py[browser]
+reportlab
