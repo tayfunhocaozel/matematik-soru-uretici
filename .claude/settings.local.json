@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(& \"$HOME\\\\.notebooklm-venv\\\\Scripts\\\\playwright.exe\" install chromium 2>&1)",
+      "PowerShell(Test-Path \"$env:LOCALAPPDATA\\\\ms-playwright\\\\chromium-1217\\\\chrome-win64\\\\chrome.exe\")",
+      "PowerShell(Get-Command claude -ErrorAction SilentlyContinue)"
+    ]
+  }
+}
