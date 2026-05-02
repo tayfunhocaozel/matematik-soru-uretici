@@ -6,12 +6,18 @@ import re
 from pathlib import Path
 from datetime import datetime
 from flask import Flask, request, jsonify, render_template
+from supabase import create_client, Client
 
 app = Flask(__name__)
 
 BASE_DIR = Path(__file__).parent
 OUTPUT_DIR = BASE_DIR / "output"
 OUTPUT_DIR.mkdir(exist_ok=True)
+
+# Supabase setup
+SUPABASE_URL = "https://mrmacnxvtqsiizyuagkp.supabase.co"
+SUPABASE_KEY = "sb_publishable_ecBOs9ZNMA5VF1cEFf35Cg_XbnbX4sX"
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 NOTEBOOKLM = str(Path.home() / ".notebooklm-venv/Scripts/notebooklm.exe")
 SORU_YAZMA_NOTEBOOK = "85ce2d8a-264e-490b-9bde-66a1fc7217fa"
@@ -268,6 +274,24 @@ SADECE aşağıdaki JSON formatında yanıt ver, başka hiçbir şey yazma:
 
     # 5. NotebookLM'e kaydet
     nlm_success, nlm_msg = save_to_notebooklm(filepath, filename)
+
+    # 6. Supabase'e kaydet
+    try:
+        supabase_data = {
+            "soru": soru_data["soru"],
+            "secenekler": soru_data["secenekler"],
+            "dogru_cevap": soru_data["dogru_cevap"],
+            "aciklama": soru_data.get("aciklama", ""),
+            "bloom_seviyesi": soru_data.get("bloom_seviyesi", ""),
+            "kazanimlar": [k["kod"] for k in secili_kazanimlar],
+            "zorluk": zorluk,
+            "konu_adi": konu_adi
+        }
+        supabase.table("sorular").insert(supabase_data).execute()
+        soru_data["supabase_kaydedildi"] = True
+    except Exception as e:
+        soru_data["supabase_kaydedildi"] = False
+        soru_data["supabase_hata"] = str(e)
 
     soru_data["pdf_adi"] = filename
     soru_data["notebooklm_kaydedildi"] = nlm_success
